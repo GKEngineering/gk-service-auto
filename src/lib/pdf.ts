@@ -61,9 +61,9 @@ export function genererPdf(d: DonneesRapport): Blob {
   } else {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.setTextColor(...MARINE);
-    doc.text("GK", MARGE, 16);
     doc.setTextColor(...BLEU);
+    doc.text("GK", MARGE, 16);
+    doc.setTextColor(...MARINE);
     doc.text("SERVICE AUTO", MARGE + 11, 16);
   }
   doc.setFont("helvetica", "bold");

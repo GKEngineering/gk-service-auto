@@ -22,7 +22,7 @@ function courrielHtml(i: Inspection, numero: string, avecLogo: boolean): string 
         ${
           avecLogo
             ? `<img src="cid:logo-gk" alt="GK Service Auto" width="220" style="display:block;width:220px;max-width:100%;height:auto">`
-            : `<div style="font-size:22px;font-weight:bold">GK <span style="color:#0166c0">SERVICE AUTO</span></div>`
+            : `<div style="font-size:22px;font-weight:bold"><span style="color:#0166c0">GK</span> SERVICE AUTO</div>`
         }
         <div style="font-size:13px;color:#0166c0;font-weight:bold;margin-top:10px">${service.titre} – Rapport ${numero}</div>
       </td></tr>
