@@ -1,9 +1,12 @@
-import { genererPdf, type DonneesRapport } from "./pdf";
-import { numeroRapport } from "./services";
+import { preparerPhoto } from "./images";
+import { genererPdf, genererPdfFin, type DonneesRapport } from "./pdf";
+import { SERVICES, numeroRapport } from "./services";
 import { BUCKET, supabase } from "./supabase";
-import type { ElementChecklist, PhotoLocale, PhotoStockee } from "./types";
+import type { ElementChecklist, Inspection, PhotoLocale, PhotoStockee } from "./types";
 
-export type DonneesInspection = Omit<DonneesRapport, "numero" | "date" | "logoDataUrl">;
+export type DonneesInspection = Omit<DonneesRapport, "numero" | "date" | "logoDataUrl" | "lienSoumission">;
+
+export type TypeRapport = "inspection" | "fin";
 
 async function chargerLogo(): Promise<string | undefined> {
   try {
@@ -19,22 +22,32 @@ async function chargerLogo(): Promise<string | undefined> {
   }
 }
 
+async function televerser(chemin: string, fichier: Blob, typeContenu: string): Promise<string> {
+  const { error } = await supabase().storage.from(BUCKET).upload(chemin, fichier, { contentType: typeContenu, upsert: true });
+  if (error) throw new Error(`Téléversement impossible (${chemin}) : ${error.message}`);
+  return chemin;
+}
+
 export interface ResultatEnvoi {
   ok: boolean;
   erreur?: string;
 }
 
-/** Demande au serveur d'envoyer le rapport PDF par courriel au client. */
-export async function envoyerRapport(id: string): Promise<ResultatEnvoi> {
+/** Demande au serveur d'envoyer un rapport PDF par courriel au client. */
+export async function envoyerRapport(id: string, rapport: TypeRapport = "inspection"): Promise<ResultatEnvoi> {
   const { data } = await supabase().auth.getSession();
   const reponse = await fetch("/api/envoyer-rapport", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${data.session?.access_token ?? ""}` },
-    body: JSON.stringify({ id }),
+    body: JSON.stringify({ id, rapport }),
   });
   if (reponse.ok) return { ok: true };
   const corps = (await reponse.json().catch(() => ({}))) as { erreur?: string };
   return { ok: false, erreur: corps.erreur ?? `Erreur ${reponse.status}` };
+}
+
+export function lienSoumission(token: string): string {
+  return `${window.location.origin}/soumission/${token}`;
 }
 
 export async function enregistrerInspection(
@@ -42,6 +55,7 @@ export async function enregistrerInspection(
   etape: (message: string) => void,
 ): Promise<{ id: string; envoi: ResultatEnvoi }> {
   const sb = supabase();
+  const travaux = d.travaux.filter((t) => t.description.trim());
 
   etape("Création de la fiche…");
   const { data: ligne, error } = await sb
@@ -62,18 +76,14 @@ export async function enregistrerInspection(
       vehicule_kilometrage: d.vehicule.kilometrage,
       niveau_carburant: d.vehicule.carburant,
       notes: d.notes,
+      travaux,
+      soumission_statut: travaux.length > 0 ? "en_attente" : null,
     })
-    .select("id, numero, created_at")
+    .select("id, numero, created_at, soumission_token")
     .single();
   if (error || !ligne) throw new Error(`Enregistrement impossible : ${error?.message}`);
   const id = ligne.id as string;
   const numero = numeroRapport(d.type, ligne.numero as number);
-
-  const televerser = async (chemin: string, fichier: Blob, typeContenu: string) => {
-    const { error: e } = await sb.storage.from(BUCKET).upload(chemin, fichier, { contentType: typeContenu, upsert: true });
-    if (e) throw new Error(`Téléversement impossible (${chemin}) : ${e.message}`);
-    return chemin;
-  };
 
   const total = d.vues.length + d.photosSupp.length + d.checklist.reduce((n, c) => n + c.photos.length, 0);
   let fait = 0;
@@ -104,7 +114,14 @@ export async function enregistrerInspection(
   const signaturePath = await televerser(`${id}/signature.png`, signature, "image/png");
 
   etape("Génération du rapport PDF…");
-  const pdf = genererPdf({ ...d, numero, date: new Date(ligne.created_at as string), logoDataUrl: await chargerLogo() });
+  const pdf = genererPdf({
+    ...d,
+    travaux,
+    numero,
+    date: new Date(ligne.created_at as string),
+    logoDataUrl: await chargerLogo(),
+    lienSoumission: travaux.length > 0 ? lienSoumission(ligne.soumission_token as string) : undefined,
+  });
   const pdfPath = await televerser(`${id}/${numero}.pdf`, pdf, "application/pdf");
 
   const { error: errMaj } = await sb
@@ -116,4 +133,87 @@ export async function enregistrerInspection(
   etape("Envoi du courriel au client…");
   const envoi = await envoyerRapport(id);
   return { id, envoi };
+}
+
+/** Télécharge une photo déjà stockée et la prépare pour un PDF. */
+export async function chargerPhotoStockee(chemin: string): Promise<PhotoLocale | null> {
+  const { data } = await supabase().storage.from(BUCKET).download(chemin);
+  return data ? preparerPhoto(data) : null;
+}
+
+export interface DonneesFinSaisie {
+  /** Une photo « après » par vue de l'inspection (même légende). */
+  apres: Record<string, PhotoLocale | null>;
+  photosSupp: PhotoLocale[];
+  notes: string;
+  technicien: string;
+}
+
+export async function enregistrerFin(
+  i: Inspection,
+  d: DonneesFinSaisie,
+  etape: (message: string) => void,
+): Promise<ResultatEnvoi> {
+  const numero = numeroRapport(i.type, i.numero);
+  const vues = SERVICES[i.type].vuesPhotos;
+  const avantParVue = new Map(i.photos.filter((p) => !p.element && vues.includes(p.legende)).map((p) => [p.legende, p.path]));
+
+  const aTeleverser = [
+    ...vues.flatMap((legende) => (d.apres[legende] ? [{ legende, photo: d.apres[legende]! }] : [])),
+    ...d.photosSupp.map((photo, n) => ({ legende: `Photo après ${n + 1}`, photo })),
+  ];
+  const finPhotos: PhotoStockee[] = [];
+  for (const [n, { legende, photo }] of aTeleverser.entries()) {
+    etape(`Envoi des photos… ${n + 1}/${aTeleverser.length}`);
+    finPhotos.push({ path: await televerser(`${i.id}/apres/${photo.id}.jpg`, photo.blob, "image/jpeg"), legende });
+  }
+
+  etape("Préparation des photos avant…");
+  const paires = await Promise.all(
+    vues.map(async (legende) => ({
+      legende,
+      avant: avantParVue.has(legende) ? await chargerPhotoStockee(avantParVue.get(legende)!) : null,
+      apres: d.apres[legende] ?? null,
+    })),
+  );
+
+  etape("Génération du rapport PDF…");
+  const date = new Date();
+  const pdf = genererPdfFin({
+    type: i.type,
+    numero,
+    date,
+    dateInspection: new Date(i.created_at),
+    technicien: d.technicien || i.technicien || "",
+    client: {
+      nom: i.client_nom,
+      email: i.client_email,
+      telephone: i.client_telephone ?? "",
+      adresse: i.client_adresse ?? "",
+    },
+    vehicule: {
+      marque: i.vehicule_marque ?? "",
+      modele: i.vehicule_modele ?? "",
+      annee: i.vehicule_annee ?? "",
+      couleur: i.vehicule_couleur ?? "",
+      plaque: i.vehicule_plaque ?? "",
+      vin: i.vehicule_vin ?? "",
+      kilometrage: i.vehicule_kilometrage ?? "",
+      carburant: i.niveau_carburant ?? "",
+    },
+    paires,
+    photosSupp: d.photosSupp,
+    notes: d.notes,
+    logoDataUrl: await chargerLogo(),
+  });
+  const finPdfPath = await televerser(`${i.id}/${numero}-fin.pdf`, pdf, "application/pdf");
+
+  const { error } = await supabase()
+    .from("inspections")
+    .update({ fin_photos: finPhotos, fin_notes: d.notes, fin_pdf_path: finPdfPath, fin_le: date.toISOString() })
+    .eq("id", i.id);
+  if (error) throw new Error(`Mise à jour impossible : ${error.message}`);
+
+  etape("Envoi du courriel au client…");
+  return envoyerRapport(i.id, "fin");
 }

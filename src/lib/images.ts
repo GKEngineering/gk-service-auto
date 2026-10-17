@@ -24,7 +24,7 @@ function versBlob(canvas: HTMLCanvasElement, qualite: number): Promise<Blob> {
 }
 
 /** Réduit la photo de l'appareil (souvent 4-12 Mo) pour le stockage et le PDF. */
-export async function preparerPhoto(fichier: File): Promise<PhotoLocale> {
+export async function preparerPhoto(fichier: Blob): Promise<PhotoLocale> {
   const url = URL.createObjectURL(fichier);
   try {
     const img = new Image();

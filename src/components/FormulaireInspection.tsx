@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { enregistrerInspection } from "@/lib/enregistrer";
 import { ETATS, NIVEAUX_CARBURANT, SERVICES, cleElement } from "@/lib/services";
-import type { Client, Etat, PhotoLocale, TypeService, Vehicule } from "@/lib/types";
+import type { Client, Etat, Inspection, PhotoLocale, Travail, TypeService, Vehicule } from "@/lib/types";
 import { ChoixVehicule } from "./ChoixVehicule";
 import { CasePhoto, ListePhotos } from "./Photos";
+import { HistoriqueVehicule, RechercheClient } from "./RechercheClient";
 import { Signature } from "./Signature";
+import { EditeurTravaux, LigneTravail, nouveauTravail } from "./Travaux";
 
 interface EtatElement {
   etat: Etat | null;
@@ -31,6 +33,8 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
   const [elements, setElements] = useState<Record<string, EtatElement>>({});
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [travaux, setTravaux] = useState<Travail[]>([]);
+  const [clientExistant, setClientExistant] = useState<Inspection | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [etape, setEtape] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -60,6 +64,30 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setVehicule({ ...vehicule, [cle]: e.target.value }),
   });
 
+  /** Client déjà venu : reprend ses coordonnées et son véhicule (le kilométrage et le carburant changent). */
+  const choisirClient = (i: Inspection) => {
+    setClientExistant(i);
+    setClient({
+      nom: i.client_nom,
+      email: i.client_email,
+      telephone: i.client_telephone ?? "",
+      adresse: i.client_adresse ?? "",
+    });
+    setVehicule({
+      marque: i.vehicule_marque ?? "",
+      modele: i.vehicule_modele ?? "",
+      annee: i.vehicule_annee ?? "",
+      couleur: i.vehicule_couleur ?? "",
+      plaque: i.vehicule_plaque ?? "",
+      vin: i.vehicule_vin ?? "",
+      kilometrage: "",
+      carburant: "",
+    });
+  };
+
+  const majTravail = (t: Travail) => setTravaux((prec) => prec.map((x) => (x.id === t.id ? t : x)));
+  const retirerTravail = (id: string) => setTravaux((prec) => prec.filter((x) => x.id !== id));
+
   const soumettre = async (e: React.FormEvent) => {
     e.preventDefault();
     setErreur(null);
@@ -88,6 +116,7 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
           client,
           vehicule,
           notes,
+          travaux,
           signatureDataUrl: signature,
           vues: service.vuesPhotos.flatMap((legende) => (vues[legende] ? [{ legende, photo: vues[legende]! }] : [])),
           photosSupp,
@@ -113,6 +142,24 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
 
       <section className="carte space-y-3">
         <h2 className="text-lg font-semibold">Client</h2>
+        {clientExistant ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span>
+                Client existant : <b>{clientExistant.client_nom}</b>
+              </span>
+              <button type="button" className="font-medium text-gk" onClick={() => setClientExistant(null)}>
+                Changer
+              </button>
+            </div>
+            <HistoriqueVehicule reference={clientExistant} />
+          </div>
+        ) : (
+          <div>
+            <p className="etiquette">Client déjà venu ? Recherchez-le :</p>
+            <RechercheClient onChoisir={choisirClient} />
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           <label>
             <span className="etiquette">Nom complet *</span>
@@ -244,6 +291,24 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
                           onChange={(photos) => majElement(cle, { photos })}
                           libelle="Photo"
                         />
+                        {travaux
+                          .filter((t) => t.element === nom)
+                          .map((t) => (
+                            <LigneTravail
+                              key={t.id}
+                              travail={t}
+                              afficherElement={false}
+                              onChange={majTravail}
+                              onRetirer={() => retirerTravail(t.id)}
+                            />
+                          ))}
+                        <button
+                          type="button"
+                          className="text-sm font-medium text-gk"
+                          onClick={() => setTravaux((prec) => [...prec, nouveauTravail(nom)])}
+                        >
+                          + Recommander un travail (avec prix)
+                        </button>
                       </div>
                     )}
                   </li>
@@ -252,6 +317,16 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
             </ul>
           </div>
         ))}
+      </section>
+
+      <section className="carte space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Travaux recommandés</h2>
+          <p className="text-sm text-slate-500">
+            Prix avant taxes. Le client recevra une soumission qu'il pourra approuver en ligne.
+          </p>
+        </div>
+        <EditeurTravaux travaux={travaux} onChange={setTravaux} />
       </section>
 
       <section className="carte space-y-3">

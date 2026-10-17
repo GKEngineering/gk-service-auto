@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Protege } from "@/components/Protege";
+import { ENTREPRISE } from "@/lib/entreprise";
 import { SERVICES } from "@/lib/services";
 import { supabase } from "@/lib/supabase";
 import type { TypeService } from "@/lib/types";
@@ -41,6 +42,19 @@ export default function Accueil() {
           </Link>
         ))}
       </div>
+
+      <section className="carte mt-6">
+        <h2 className="font-semibold">Pour le client</h2>
+        <p className="mb-3 text-sm text-slate-500">Forfaits et réservations sur {ENTREPRISE.site}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <a href={ENTREPRISE.forfaits} target="_blank" rel="noreferrer" className="bouton-secondaire">
+            Nos forfaits ↗
+          </a>
+          <a href={ENTREPRISE.rendezVous} target="_blank" rel="noreferrer" className="bouton-secondaire">
+            Prendre rendez-vous ↗
+          </a>
+        </div>
+      </section>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/historique" className="bouton-secondaire">

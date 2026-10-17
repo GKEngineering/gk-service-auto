@@ -29,6 +29,16 @@ export interface ElementChecklist {
   photos: string[];
 }
 
+/** Travail recommandé (ligne de soumission). Prix avant taxes. */
+export interface Travail {
+  id: string;
+  description: string;
+  element?: string;
+  prix: number;
+  /** Réponse du client : null tant qu'il n'a pas répondu. */
+  approuve: boolean | null;
+}
+
 export interface Client {
   nom: string;
   email: string;
@@ -72,4 +82,13 @@ export interface Inspection {
   pdf_path: string | null;
   email_envoye_le: string | null;
   email_erreur: string | null;
+  travaux: Travail[];
+  soumission_token: string;
+  soumission_statut: "en_attente" | "repondue" | null;
+  soumission_reponse_le: string | null;
+  fin_photos: PhotoStockee[];
+  fin_notes: string | null;
+  fin_pdf_path: string | null;
+  fin_le: string | null;
+  fin_email_envoye_le: string | null;
 }

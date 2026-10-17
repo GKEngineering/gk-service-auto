@@ -9,6 +9,13 @@ Deux sections :
 
 À la fin, le client signe sur l'écran. Un rapport PDF avec les photos est généré, enregistré, puis **envoyé automatiquement par courriel au client** avant le début des travaux. Toutes les inspections restent consultables dans l'**Historique**.
 
+Autres fonctions :
+
+- **Client récurrent** : recherche par nom, courriel, téléphone ou plaque. Elle remplit la fiche et affiche l'historique du véhicule (points à surveiller, travaux refusés).
+- **Travaux recommandés avec prix** : TPS et TVQ calculées. Le client reçoit une soumission et l'**approuve en ligne** (page `/soumission/…`), et l'entreprise est avertie par courriel.
+- **Rapport de fin de travaux (Détailing)** : photos après prises à côté des photos avant, PDF avant / après envoyé au client.
+- Liens vers les **forfaits** et la **prise de rendez-vous** sur gkgroupeinc.com.
+
 ## Technologies
 
 - Next.js 16 (React 19) et Tailwind CSS 4
@@ -22,6 +29,7 @@ Deux sections :
 
 1. Créez un projet sur <https://supabase.com>.
 2. Dans **SQL Editor**, collez et exécutez le contenu de [`supabase/schema.sql`](supabase/schema.sql).
+   Si la base existait déjà, exécutez seulement les nouveaux fichiers de [`supabase/migrations/`](supabase/migrations/).
 3. Dans **Authentication > Users > Add user**, créez un compte (courriel et mot de passe) pour chaque technicien.
 4. Dans **Authentication > Sign In / Providers**, désactivez « Allow new users to sign up » pour que personne ne puisse se créer un compte.
 5. Dans **Project Settings > API**, copiez l'URL, la clé `anon` et la clé `service_role`.
