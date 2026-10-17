@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { enregistrerInspection } from "@/lib/enregistrer";
 import { ETATS, NIVEAUX_CARBURANT, SERVICES, cleElement } from "@/lib/services";
 import type { Client, Etat, PhotoLocale, TypeService, Vehicule } from "@/lib/types";
+import { ChoixVehicule } from "./ChoixVehicule";
 import { CasePhoto, ListePhotos } from "./Photos";
 import { Signature } from "./Signature";
 
@@ -135,18 +136,7 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
       <section className="carte space-y-3">
         <h2 className="text-lg font-semibold">Véhicule</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <label>
-            <span className="etiquette">Marque</span>
-            <input className="champ" {...champVehicule("marque")} />
-          </label>
-          <label>
-            <span className="etiquette">Modèle</span>
-            <input className="champ" {...champVehicule("modele")} />
-          </label>
-          <label>
-            <span className="etiquette">Année</span>
-            <input className="champ" inputMode="numeric" maxLength={4} {...champVehicule("annee")} />
-          </label>
+          <ChoixVehicule vehicule={vehicule} onChange={(maj) => setVehicule((v) => ({ ...v, ...maj }))} />
           <label>
             <span className="etiquette">Couleur</span>
             <input className="champ" {...champVehicule("couleur")} />
@@ -158,10 +148,6 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
           <label>
             <span className="etiquette">Kilométrage</span>
             <input className="champ" inputMode="numeric" {...champVehicule("kilometrage")} />
-          </label>
-          <label className="col-span-2">
-            <span className="etiquette">NIV (VIN)</span>
-            <input className="champ uppercase" maxLength={17} {...champVehicule("vin")} />
           </label>
           <label>
             <span className="etiquette">Carburant</span>
