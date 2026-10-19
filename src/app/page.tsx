@@ -53,7 +53,7 @@ export default function Accueil() {
             rel="noreferrer"
             className="bouton-secondaire"
             onClick={(e) => {
-              // Android : ouvrir l'app Square si possible (le lien web sert de repli).
+              // Android : Google Play au lieu de l'App Store.
               const lien = lienForfaitsSquare(navigator.userAgent);
               if (lien !== ENTREPRISE.forfaitsSquare) {
                 e.preventDefault();
