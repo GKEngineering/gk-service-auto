@@ -44,17 +44,23 @@ export function Protege({ children, titre, retour }: { children: React.ReactNode
   return (
     <>
       <header className="sticky top-0 z-20 border-b-4 border-gk bg-white pt-[env(safe-area-inset-top)] shadow-sm">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-2">
-          {retour && (
-            <Link href={retour} className="-ml-1 rounded-md px-2 py-1 text-xl leading-none text-marine hover:bg-slate-100" aria-label="Retour">
-              ←
-            </Link>
-          )}
+        <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2">
+          <div>
+            {retour && (
+              <Link href={retour} className="-ml-1 rounded-md px-2 py-1 text-xl leading-none text-marine hover:bg-slate-100" aria-label="Retour">
+                ←
+              </Link>
+            )}
+          </div>
           <Link href="/" aria-label="Accueil GK Service Auto">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-entete.png" alt="GK Service Auto" className="h-10 w-auto" />
           </Link>
-          {titre && <span className="ml-auto truncate text-sm font-medium text-gk">{titre}</span>}
+          {titre ? (
+            <span className="truncate text-right text-xs font-medium text-gk sm:text-sm">{titre}</span>
+          ) : (
+            <div />
+          )}
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 pt-5 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">{children}</main>

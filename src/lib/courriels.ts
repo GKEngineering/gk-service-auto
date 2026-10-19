@@ -106,10 +106,10 @@ export function courrielInspection(i: Inspection, numero: string, lienSoumission
   return gabarit(
     `${SERVICES[i.type].titre} – Rapport ${numero}`,
     `<p>Bonjour ${echapper(i.client_nom)},</p>
-     <p>Avant de commencer les travaux sur votre véhicule${vehicule ? ` <b>${echapper(vehicule)}</b>` : ""}${
-       i.vehicule_plaque ? ` (plaque ${echapper(i.vehicule_plaque)})` : ""
-     }, nous avons effectué une inspection de son état, photos à l'appui.</p>
-     <p>Vous trouverez le rapport complet en pièce jointe (PDF).</p>
+     <p>${SERVICES[i.type].introCourriel.replace(
+       "{vehicule}",
+       (vehicule ? ` <b>${echapper(vehicule)}</b>` : "") + (i.vehicule_plaque ? ` (plaque ${echapper(i.vehicule_plaque)})` : ""),
+     )}</p>
      <table cellpadding="0" cellspacing="0" style="margin:16px 0;font-size:14px">
        <tr><td style="padding:4px 12px 4px 0;color:#64748b">Éléments à surveiller</td><td style="font-weight:bold;color:#d97706">${surveiller}</td></tr>
        <tr><td style="padding:4px 12px 4px 0;color:#64748b">Défauts / dommages constatés</td><td style="font-weight:bold;color:#dc2626">${defauts}</td></tr>

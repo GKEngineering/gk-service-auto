@@ -7,7 +7,7 @@ import {
   pieceLogo,
   transporteur,
 } from "@/lib/courriels";
-import { numeroRapport } from "@/lib/services";
+import { SERVICES, numeroRapport } from "@/lib/services";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import type { Inspection } from "@/lib/types";
 
@@ -45,12 +45,11 @@ export async function POST(req: Request) {
       cc: process.env.EMAIL_COPIE || undefined,
       subject: fin
         ? `GK Service Auto – Votre véhicule est prêt (${numero})`
-        : `GK Service Auto – État de votre véhicule avant travaux (${numero})`,
+        : `GK Service Auto – ${SERVICES[inspection.type].sujetCourriel} (${numero})`,
       html: fin ? courrielFin(inspection, numero, !!logo) : courrielInspection(inspection, numero, lienSoumission, !!logo),
       text: fin
         ? `Bonjour ${inspection.client_nom},\n\nLes travaux sur votre véhicule sont terminés. Vous trouverez le rapport avant / après en pièce jointe.\n\nL'équipe GK Service Auto`
-        : `Bonjour ${inspection.client_nom},\n\nAvant de commencer les travaux, nous avons inspecté l'état de votre véhicule. ` +
-          `Vous trouverez le rapport complet avec photos en pièce jointe.` +
+        : `Bonjour ${inspection.client_nom},\n\n${SERVICES[inspection.type].introCourriel.replace("{vehicule}", "")}` +
           (inspection.travaux.length ? `\n\nSoumission des travaux recommandés : ${lienSoumission}` : "") +
           `\n\nL'équipe GK Service Auto`,
       attachments: [

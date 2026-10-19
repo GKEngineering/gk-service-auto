@@ -57,12 +57,13 @@ export default function PageSoumission() {
   return (
     <div className="min-h-dvh">
       <header className="border-b-4 border-gk bg-white pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex max-w-2xl items-center px-4 py-2">
+        <div className="mx-auto grid max-w-2xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2">
+          <div />
           <a href={`https://${ENTREPRISE.site}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-entete.png" alt="GK Service Auto" className="h-10 w-auto" />
           </a>
-          <a href={ENTREPRISE.telephoneLien} className="ml-auto text-sm font-semibold text-gk">
+          <a href={ENTREPRISE.telephoneLien} className="text-right text-xs font-semibold text-gk sm:text-sm">
             {ENTREPRISE.telephone}
           </a>
         </div>

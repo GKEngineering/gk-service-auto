@@ -4,8 +4,8 @@ Application web installable (PWA) pour les techniciens de GK Service Auto.
 
 Deux sections :
 
-- **Service Maintenance** : mécanique. On prend l'état du véhicule en photo à l'arrivée et on remplit la fiche d'inspection (pneus, freins, liquides, etc.).
-- **Détailing Auto** : lavage. On prend l'état extérieur et intérieur en photo avant le nettoyage.
+- **Service Auto** : inspection mécanique vendue sur rendez-vous. On prend le véhicule en photo et on remplit la fiche d'inspection (pneus, freins, liquides, etc.).
+- **Détailing Auto** : on prend l'état extérieur et intérieur en photo avant le nettoyage.
 
 À la fin, le client signe sur l'écran. Un rapport PDF avec les photos est généré, enregistré, puis **envoyé automatiquement par courriel au client** avant le début des travaux. Toutes les inspections restent consultables dans l'**Historique**.
 

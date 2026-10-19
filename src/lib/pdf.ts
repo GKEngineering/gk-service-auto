@@ -321,8 +321,7 @@ export function genererPdf(d: DonneesRapport): Blob {
   doc.setFontSize(9);
   doc.setTextColor(30, 41, 59);
   const declaration = doc.splitTextToSize(
-    `Je soussigné(e), ${d.client.nom}, confirme avoir pris connaissance de l'état du véhicule décrit dans ce rapport ` +
-      `et dans les photos ci-jointes, constaté par GK Service Auto avant le début des travaux.`,
+    `Je soussigné(e), ${d.client.nom}, confirme ${service.confirmation}.`,
     L - 2 * MARGE,
   ) as string[];
   doc.text(declaration, MARGE, m.y);

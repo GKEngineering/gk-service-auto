@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "GK Service Auto",
     short_name: "GK Service",
-    description: "Inspections de véhicules : Service Maintenance et Détailing Auto",
+    description: "Inspections de véhicules : Service Auto et Détailing Auto",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

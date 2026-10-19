@@ -9,6 +9,12 @@ export interface Service {
   titre: string;
   code: string;
   description: string;
+  /** Objet du courriel envoyé avec le rapport. */
+  sujetCourriel: string;
+  /** Phrase d'introduction du courriel ({vehicule} est remplacé). */
+  introCourriel: string;
+  /** Ce que le client confirme en signant (formulaire et PDF). */
+  confirmation: string;
   vuesPhotos: string[];
   categories: Categorie[];
 }
@@ -23,9 +29,13 @@ const VUES_EXTERIEURES = [
 
 export const SERVICES: Record<TypeService, Service> = {
   maintenance: {
-    titre: "Service Maintenance",
+    titre: "Service Auto",
     code: "SM",
-    description: "Mécanique : inspection et état du véhicule avant les travaux.",
+    description: "Inspection mécanique complète du véhicule, sur rendez-vous.",
+    sujetCourriel: "Rapport d'inspection de votre véhicule",
+    introCourriel:
+      "Merci d'avoir fait appel à notre service d'inspection. Nous avons inspecté votre véhicule{vehicule} lors de votre rendez-vous : vous trouverez ci-dessous le résumé, et le rapport complet avec photos en pièce jointe (PDF).",
+    confirmation: "l'inspection de mon véhicule a été effectuée par GK Service Auto et avoir pris connaissance de son état décrit dans ce rapport et dans les photos ci-jointes",
     vuesPhotos: [...VUES_EXTERIEURES, "Compartiment moteur"],
     categories: [
       {
@@ -72,7 +82,11 @@ export const SERVICES: Record<TypeService, Service> = {
   detailing: {
     titre: "Détailing Auto",
     code: "DA",
-    description: "Lavage : état extérieur et intérieur du véhicule avant le nettoyage.",
+    description: "État extérieur et intérieur du véhicule avant le nettoyage.",
+    sujetCourriel: "État de votre véhicule avant le nettoyage",
+    introCourriel:
+      "Avant de commencer le nettoyage de votre véhicule{vehicule}, nous avons constaté son état, photos à l'appui. Vous trouverez le rapport complet en pièce jointe (PDF).",
+    confirmation: "avoir pris connaissance de l'état du véhicule décrit dans ce rapport et dans les photos ci-jointes, constaté par GK Service Auto avant le début des travaux",
     vuesPhotos: [...VUES_EXTERIEURES, "Intérieur avant", "Intérieur arrière", "Coffre"],
     categories: [
       {

@@ -347,7 +347,7 @@ export function FormulaireInspection({ type }: { type: TypeService }) {
         <div>
           <h2 className="text-lg font-semibold">Signature du client *</h2>
           <p className="text-sm text-slate-500">
-            Le client confirme l'état du véhicule constaté avant le début des travaux.
+            En signant, le client confirme {service.confirmation}.
           </p>
         </div>
         <Signature onChange={setSignature} />

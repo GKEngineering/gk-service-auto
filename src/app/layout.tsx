@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GK Service Auto",
-  description: "Inspections de véhicules : Service Maintenance et Détailing Auto",
+  description: "Inspections de véhicules : Service Auto et Détailing Auto",
   appleWebApp: { capable: true, title: "GK Service", statusBarStyle: "default" },
 };
 

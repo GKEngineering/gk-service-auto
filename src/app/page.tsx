@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Protege } from "@/components/Protege";
-import { ENTREPRISE } from "@/lib/entreprise";
+import { ENTREPRISE, lienForfaitsSquare } from "@/lib/entreprise";
 import { SERVICES } from "@/lib/services";
 import { supabase } from "@/lib/supabase";
 import type { TypeService } from "@/lib/types";
@@ -44,10 +44,23 @@ export default function Accueil() {
       </div>
 
       <section className="carte mt-6">
-        <h2 className="font-semibold">Pour le client</h2>
-        <p className="mb-3 text-sm text-slate-500">Forfaits et réservations sur {ENTREPRISE.site}</p>
+        <h2 className="font-semibold">Forfaits et rendez-vous</h2>
+        <p className="mb-3 text-sm text-slate-500">Forfaits dans Square · réservations sur {ENTREPRISE.site}</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <a href={ENTREPRISE.forfaits} target="_blank" rel="noreferrer" className="bouton-secondaire">
+          <a
+            href={ENTREPRISE.forfaitsSquare}
+            target="_blank"
+            rel="noreferrer"
+            className="bouton-secondaire"
+            onClick={(e) => {
+              // Android : ouvrir l'app Square si possible (le lien web sert de repli).
+              const lien = lienForfaitsSquare(navigator.userAgent);
+              if (lien !== ENTREPRISE.forfaitsSquare) {
+                e.preventDefault();
+                window.location.href = lien;
+              }
+            }}
+          >
             Nos forfaits ↗
           </a>
           <a href={ENTREPRISE.rendezVous} target="_blank" rel="noreferrer" className="bouton-secondaire">
